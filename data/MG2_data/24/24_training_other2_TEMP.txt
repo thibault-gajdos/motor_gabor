@@ -1,0 +1,16 @@
+subject_id,trial,effector_order,block,condition,stim1,gabor.contrast,pressed_gabor,expected_gabor,pressed_cue,expected_cue,rt_gabor,rt_cue,accuracy_gabor,accuracy_cue,congruency,SDT,pressed_conf,conf,rt_conf,trial_start_time_rel2bloc,bloc_start_time_rel2exp,exp_start_date,effector
+24,1,other2,1,gabor,90,0.01570101573341979,i,n,-1,i,0.39640690602709583,-1,0,-1,otherWEcongruent,FA,i,1,2.1853212749470003,0,
+24,2,other2,1,gabor,90,0.01570101573341979,n,n,-1,i,0.7691437506382499,-1,1,-1,congruent,CR,x,4,0.4479832333545346,5266,
+24,3,other2,1,gabor,90,0.01570101573341979,n,n,-1,i,0.5467944695874394,-1,1,-1,congruent,CR,n,4,0.32273450225739,9016,
+24,4,other2,1,gabor,0,0.01570101573341979,x,x,-1,z,0.6546483435722621,-1,1,-1,congruent,hit,x,4,0.4115435036546842,12517,
+24,5,other2,1,gabor,0,0.01570101573341979,x,x,-1,z,0.6363614720426085,-1,1,-1,congruent,hit,i,4,0.38432996008805276,15999,
+24,6,other2,1,gabor,0,0.01570101573341979,z,x,-1,z,0.5153155381003671,-1,0,-1,otherWEcongruent,miss,space,0,1.3790842394914762,19650,
+24,7,other2,1,gabor,90,0.01570101573341979,n,n,-1,i,0.6818952944795456,-1,1,-1,congruent,CR,x,4,0.37993862264966083,24066,
+24,8,other2,1,gabor,0,0.01570101573341979,x,x,-1,z,0.6348009268040187,-1,1,-1,congruent,hit,n,4,0.4866977342139762,27649,
+subject_id,trial,effector_order,block,condition,stim1,gabor.contrast,pressed_gabor,expected_gabor,pressed_cue,expected_cue,rt_gabor,rt_cue,accuracy_gabor,accuracy_cue,congruency,SDT,pressed_conf,conf,rt_conf,trial_start_time_rel2bloc,bloc_start_time_rel2exp,exp_start_date,effector
+24,1,other2,1,gabor,90,0.01569310101573342,n,n,-1,i,0.539235962580733,-1,1,-1,congruent,CR,i,4,0.41207072526185584,0,
+24,2,other2,1,gabor,90,0.01569310101573342,n,n,-1,i,0.5239400080945416,-1,1,-1,congruent,CR,x,4,0.41287442141947395,3601,
+24,3,other2,1,gabor,0,0.01569310101573342,x,x,-1,z,0.7098042483385143,-1,1,-1,congruent,hit,x,3,0.367685808177157,7150,
+24,4,other2,1,gabor,0,0.01569310101573342,n,x,-1,z,0.7775063377948754,-1,0,-1,incongruent,miss,x,2,0.6814433353893037,10649,
+24,5,other2,1,gabor,90,0.01569310101573342,n,n,-1,i,0.511342752411565,-1,1,-1,congruent,CR,i,4,0.7362924302033207,14734,
+24,6,other2,1,gabor,0,0.01569310101573342,x,x,-1,z,0.7200430225120726,-1,1,-1,congruent,hit,n,4,1.1613301958591364,18499,

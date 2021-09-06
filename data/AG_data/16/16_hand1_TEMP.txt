@@ -1,0 +1,1 @@
+subject_id,trial,effector_order,block,condition,stim1,gabor.contrast,pressed_gabor,expected_gabor,pressed_cue,expected_cue,rt_gabor,rt_cue,accuracy_gabor,accuracy_cue,congruency,SDT,pressed_conf,conf,rt_conf,trial_start_time_rel2bloc,bloc_start_time_rel2exp,exp_start_date,effector

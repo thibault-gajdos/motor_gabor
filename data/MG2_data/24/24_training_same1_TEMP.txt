@@ -1,0 +1,9 @@
+subject_id,trial,effector_order,block,condition,stim1,gabor.contrast,pressed_gabor,expected_gabor,pressed_cue,expected_cue,rt_gabor,rt_cue,accuracy_gabor,accuracy_cue,congruency,SDT,pressed_conf,conf,rt_conf,trial_start_time_rel2bloc,bloc_start_time_rel2exp,exp_start_date,effector
+24,1,same1,1,gabor,0,0.01569310157334198,x,x,-1,x,0.6737008960080857,-1,1,-1,congruent,hit,z,4,3.5556028719561255,3449,
+24,2,same1,1,gabor,90,0.01569310157334198,x,n,-1,n,0.48933691419051684,-1,0,-1,incongruent,FA,n,4,2.699318567032151,10281,
+24,3,same1,1,gabor,0,0.01569310157334198,x,x,-1,x,0.6737496630466921,-1,1,-1,congruent,hit,n,4,0.7086634068268722,19448,
+24,4,same1,1,gabor,0,0.01569310157334198,x,x,-1,x,0.7225593249108897,-1,1,-1,congruent,hit,x,3,0.9875517333803145,23449,
+24,5,same1,1,gabor,0,0.01569310157334198,x,x,-1,x,0.5491471912105226,-1,1,-1,congruent,hit,z,4,0.5812251508900772,27581,
+24,6,same1,1,gabor,90,0.01569310157334198,x,n,-1,n,0.7020245616918146,-1,0,-1,incongruent,FA,x,4,0.5681482886611775,31348,
+24,7,same1,1,gabor,90,0.01569310157334198,n,n,-1,n,0.5709502814279404,-1,1,-1,congruent,CR,i,4,0.5218161459602015,35048,
+24,8,same1,1,gabor,0,0.01569310157334198,x,x,-1,x,0.6055936945372196,-1,1,-1,congruent,hit,i,4,0.3556518693903854,38564,
