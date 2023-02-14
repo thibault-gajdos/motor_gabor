@@ -1,6 +1,7 @@
 rm(list=ls(all=TRUE))  ## efface les données
 source('~/thib/projects/tools/R_lib.r')
 setwd('~/thib/projects/motor_gabor/data/MG2')
+library(svglite)
 
 ## * preparation
 
@@ -131,9 +132,24 @@ summary(l.conf)
 
 save(l.conf, file = "fit_conf_MG2.rdata")
 tab_model(l.conf, file = "conf_MG2.html")
-
+##load( file = "fit_conf_MG2.rdata")
 ## plot interactions
 ## effects are averaged over the levels of factors
+## congruency
+predict <- ggemmeans(l.conf, c('congruency'))
+predict <- as.data.frame(predict) %>%
+    rename(confidence = response.level, congruency = x)
+
+plot <- ggplot(data = predict, aes(x = confidence, y = predicted, colour = congruency)) +
+    geom_point(position = position_dodge(width = .5)) +
+    geom_errorbar(aes(ymin = conf.low, ymax = conf.high),
+                  width = .5, position = "dodge") +
+    labs(y = "Probabilty", 
+        title = "Effect of Congruency on Confidence") +
+    theme(plot.title = element_text(hjust = 0.5))
+print(plot)
+ggsave('conf_MG2.svg', plot)
+
 
 ## acc:congruency:order interaction 
 predict <- ggemmeans(l.conf, c('accuracy_gabor','congruency','effector_order'))
