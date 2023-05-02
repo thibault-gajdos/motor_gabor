@@ -69,10 +69,11 @@ l.acc <- lmer_alt(accuracy_gabor  ~ size * position * rt_gabor_centered + (1 + s
 summary(l.acc)
 
 ## remove: position
-l.acc <- lmer_alt(accuracy_gabor  ~ size * position * rt_gabor_centered + (1 + size  + rt_gabor_centered || subject_id),
+l.acc <- lmer_alt(accuracy_gabor  ~ size * position * rt_gabor_centered  + (1 + size  + rt_gabor_centered || subject_id),
                  family = binomial(link = "logit"),
                  data = data)
 summary(l.acc)
+
 save(l.acc, file = 'fit_acc_MG5.rdata')
 tab_model(l.acc, file = "acc_MG5.html")
 
@@ -117,7 +118,7 @@ save(l.conf, file = "fit_conf_MG5.rdata")
 tab_model(l.conf, file = "conf_MG5.html")
 
 ## plot
-predict <- ggemmeans(l.conf, c('rt_gabor_centered','size'))
+predict <- ggemmeans(l.conf, c('size','accuracy_gabor'))
 plot(predict)
 ggsave('conf_MG5_1.jpeg', plot)
 
@@ -137,7 +138,7 @@ ggsave('conf_MG5_2.jpeg', plot)
 
 
 ## ** bayesian
-fit_conf <- brm(conf_ord ~ accuracy_gabor * size * position * rt_gabor_centered + (1 * size * position * rt_gabor_centered | subject_id),
+fit_conf <- brm(conf ~ accuracy_gabor * size * position * rt_gabor_centered + (1 * size * position * rt_gabor_centered | subject_id),
                 init_r = 0.05,
         data = data,
     family=cumulative("probit"),
