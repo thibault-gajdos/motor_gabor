@@ -19,19 +19,38 @@ data$size <- as.factor(data$size)
 contrasts(data$size) <-  -contr.sum(2) ## big: -1; small: 1
 data$position <- as.factor(data$position)
 contrasts(data$position) <-  contr.sum(3)
-
+data$dt <-  data$OOZ_time
 
 ## * preliminary analysis
 ## rt, accuracy, conf mean by subject
+
+nrow(data)
 d <- data  %>%
   group_by(subject_id) %>%
   summarise(rt = mean(rt_gabor), accuracy = mean(acc_num), conf = mean(conf))
 kable(d)
 
+mean(d$accuracy)
+sd(d$accuracy)
+
+mean(d$conf)
+sd(d$conf)
+
 ## rt, accuracy, conf mean by condition
+
 d <- data  %>%
-  group_by(size) %>%
-  summarise(rt = mean(rt_gabor), accuracy = mean(acc_num), conf = mean(conf))
+    group_by(size, subject_id) %>%
+    summarise(rt = mean(rt_gabor), dt = mean(dt), accuracy = mean(acc_num), conf = mean(conf)) %>%
+    ungroup() %>%
+    group_by(size) %>%
+    summarise(mean_rt = mean(rt), mean_dt = mean(dt), mean_accuracy = mean(accuracy), mean_conf = mean(conf),
+              sd_rt = sd(rt),  sd_dt = sd(dt), sd_accuracy = sd(accuracy), sd_conf = sd(conf))
+
+d_indiv <- data  %>%
+    group_by(size, subject_id) %>%
+    summarise(rt = mean(rt_gabor), dt = mean(dt), accuracy = mean(acc_num), conf = mean(conf)) %>%
+    ungroup()
+    
 
 plot.rt  <- ggplot(data = data, aes(rt_gabor)) +
   geom_histogram()  +
@@ -46,6 +65,13 @@ plot.conf  <- ggplot(data = data, aes(conf)) +
 ggsave(plot.conf, file = "conf_des.jpeg")
 
 
+plot <- ggplot(d_indiv, aes(x = subject_id, y = accuracy, fill = size)) +
+     geom_bar(position=position_dodge(width = 0.8), stat="identity", width = 0.8) +
+    coord_cartesian(ylim=c(.5,1)) +
+    labs(title = "Accuracy by subject and condition", x = "Subject", y = "Accuracy")+
+    theme_minimal() +
+    scale_fill_brewer(palette = "Set1")
+plot
 
 ## * Response Time and decision time
 ## response time: time from onset to decision (rt_gabor)
@@ -63,19 +89,24 @@ plot.dt <- ggplot(data, aes(x=size, y=OOZ_time)) +
 ggsave(plot.rt, file = "dt_violin.jpeg")
 
 ## ** frequentist
-l.rt <- lmer_alt(rt_gabor ~ accuracy_gabor *size + (1+accuracy_gabor*size| subject_id), data = data)
+l.rt <- lmer_alt(rt_gabor ~ accuracy_gabor + size +  position+ (1+accuracy_gabor+size+position| subject_id), data = data)
 summary(l.rt)
-tab_model(l.rt, file = "rt.html")
 
-l.dt <- lmer_alt(OOZ_time ~ accuracy_gabor *size + (1+accuracy_gabor*size| subject_id), data = data)
+
+l.dt <- lmer_alt(OOZ_time ~ accuracy_gabor + size + position + (1+accuracy_gabor*size+position | subject_id), data = data)
 ## singular
-l.dt <- lmer_alt(OOZ_time ~ accuracy_gabor *size + (1+accuracy_gabor+size| subject_id), data = data)
-## singular
-l.dt <- lmer_alt(OOZ_time ~ accuracy_gabor *size + (1+accuracy_gabor| subject_id), data = data)
-tab_model(l.dt, file = "dt.html")
+
+l.dt <- lmer_alt(OOZ_time ~ accuracy_gabor +size  + position + (1+accuracy_gabor+size+position || subject_id), data = data)
+summary(l.dt)
+## singumar
+
+l.dt <- lmer_alt(OOZ_time ~ accuracy_gabor +size  + position + (1+accuracy_gabor+position | subject_id), data = data)
+summary(l.dt)
+
+tab_model(l.rt, l.dt, show.ci = FALSE, file = "rtdt.html", digits = 3)
 
 ## ** Bayesian
-fit.rt <- brm(rt_gabor ~ accuracy_gabor *size + (1+accuracy_gabor*size| subject_id),
+fit.rt <- brm(rt_gabor ~ accuracy_gabor +size + position + (1+accuracy_gabor+size + position| subject_id),
            data = data,
            prior = c(set_prior("normal(0,1)", class = "b")),
            cores = 4, chains = 4,
@@ -84,7 +115,7 @@ fit.rt <- brm(rt_gabor ~ accuracy_gabor *size + (1+accuracy_gabor*size| subject_
 save(fit.rt, file = "bayes_rt.rdata")
 tab_model(fit.rt, file = "bayes_rt.html")
 
-fit.dt <- brm(OOZ_time ~ accuracy_gabor *size + (1+accuracy_gabor*size|| subject_id),
+fit.dt <- brm(OOZ_time ~ accuracy_gabor +size + position  + (1+accuracy_gabor+size+ position| subject_id),
            data = data,
            prior = c(set_prior("normal(0,1)", class = "b")),
            cores = 4, chains = 4,
@@ -210,4 +241,5 @@ fit_conf <- brm(conf ~ accuracy_gabor * size * position * rt_gabor_centered + (1
 )
 save(fit_conf, file = 'conf.rdata')
 tab_model(fit_conf, file = "conf_bayes_MG5.html")
+
 
