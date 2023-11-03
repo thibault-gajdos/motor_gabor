@@ -1,7 +1,8 @@
 rm(list=ls(all=TRUE))  ## efface les données
 source('~/thib/projects/tools/R_lib.r')
 setwd('~/thib/projects/motor_gabor/data/MG5')
-
+library(gridExtra)
+library(grid)
 ## * preparation
 ## load data
 data <- read_csv('data_final_MG5.csv') %>%
@@ -124,6 +125,8 @@ fit.dt <- brm(OOZ_time ~ accuracy_gabor +size + position  + (1+accuracy_gabor+si
 save(fit.dt, file = "bayes_dt.rdata")
 tab_model(fit.dt, file = "bayes_dt.html")
 
+tab_model(fit.dt, fit.rt, file = "bayes_dtrt.html")
+
 
 ## * Accuracy
 ## ** descriptive
@@ -162,9 +165,10 @@ predict <- ggemmeans(l.acc, c('dt_centered','size','position'))
 plot <- plot(predict) + 
   labs(x = "Centered Decision Time (ms)", 
        y = "Accuracy", 
-       title = "Decision Time x Size x Position interaction on Accuracy") +
+       title = "Accuracy as a function of \n Decision Time,  Size and  Position") +
     theme(plot.title = element_text(hjust = 0.5))
 ggsave('acc_pred.jpeg', plot)
+ggsave('acc_pred.svg', plot)
 
 ## ** Bayesian 
 
@@ -186,10 +190,13 @@ tab_model(fit_acc, file = "acc_bayes.html")
 
 ## planned model
 
-l.conf <- clmm(conf_ord ~ accuracy_gabor * size * position * rt_gabor_centered + (1 * size * position * rt_gabor_centered | subject_id),
+l.conf <- clmm(conf_ord ~ accuracy_gabor * size * position * rt_gabor_centered + (1 * accuracy_gabor * size * position * rt_gabor_centered | subject_id),
                   data = data,
                   link = c("probit"))
+
 tab_model(l.conf, file = "conf.html")
+tab_model(l.acc, l.conf, file = "acc_conf.html",  show.ci = FALSE, digits.p = 3)
+summary(l.conf)
 
 ## plot
 ## size:accuracy interaction
@@ -197,45 +204,70 @@ predict <- ggemmeans(l.conf, c('size','accuracy_gabor'))
 predict <- as.data.frame(predict) %>%
     rename(confidence = response.level, size = x, accuracy = group)
 
-plot <- ggplot(data = predict, aes(x = confidence, y = predicted, colour = size)) +
+plot1 <- ggplot(data = predict, aes(x = accuracy, y = predicted, colour = size)) +
     geom_point(position = position_dodge(width = .5)) +
     geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = .5, position = "dodge") +
-    facet_wrap(~ accuracy) +
-    labs(x = "Confidence", y = "Probability", title = "Size x Accuracy interaction on Confidence") +
+    facet_wrap(~ confidence) +
+    labs(x = "Accuracy", y = "Probability", title = "Confidence as a function of \n Size and Accuracy") +
     theme(plot.title = element_text(hjust = 0.5))
-ggsave('conf_pred_1.jpeg', plot)
+ggsave('conf_pred_1.jpeg', plot1)
+ggsave('conf_pred_1.svg', plot1)
 
 ## size:rt interaction
 predict <- ggemmeans(l.conf, c('rt_gabor_centered','size'))
-plot <- plot(predict) + 
+plot2 <- plot(predict) + 
   labs(x = "Centered response Time (ms)", 
        y = "probability", 
-       title = "Response Time x Size interaction on Confidence") +
+       title = "Confidence as a function of \n Response Time and Size") +
     theme(plot.title = element_text(hjust = 0.5))
-ggsave('conf_pred_2.jpeg', plot)
+ggsave('conf_pred_2.jpeg', plot2)
+ggsave('conf_pred_2.svg', plot2)
 
 ## size main effect
 predict <- ggemmeans(l.conf, c('size'))
 predict <- as.data.frame(predict) %>%
     rename(confidence = response.level, size = x)
 
-plot <- ggplot(data = predict, aes(x = confidence, y = predicted, colour = size)) +
+plot3 <- ggplot(data = predict, aes(x = confidence, y = predicted, colour = size)) +
     geom_point(position = position_dodge(width = .5)) +
     geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = .5, position = "dodge") +
-    labs(x = "Confidence", y = "Probability", title = "Size main effect on Confidence") +
-    theme(plot.title = element_text(hjust = 0.5))
+    labs(x = "Confidence", y = "Probability", title = "Confidence as a function \n of size") +
+    theme(plot.title = element_text(hjust = 0.5)) +
+    theme(legend.justification = c(1, 1), legend.position = c(1, 1)) ## +
+    ##scale_colour_discrete(name="Circle size")
+ggsave('conf_pred_3.jpeg', plot3)
+ggsave('conf_pred_3.svg', plot3)
 
-ggsave('conf_pred_3.jpeg', plot)
+## acc:rt interaction
+predict <- ggemmeans(l.conf, c('rt_gabor_centered','accuracy_gabor'))
+plot4 <- plot(predict) + 
+  labs(x = "Centered Response Time (ms)", 
+       y = "probability", 
+       title = "Confidence as a function of \n Response Time and Accuracy interaction") +
+    theme(plot.title = element_text(hjust = 0.5))     
+ggsave('conf_pred_4.jpeg', plot4)
+ggsave('conf_pred_4.svg', plot4)
+
+
+
+plot_conf <- ggarrange(ggarrange(plot3, plot1+theme(legend.position = "none"), ncol = 2,  common.legend = FALSE, labels = "AUTO"),
+                       plot2,
+                       nrow = 2,
+                       common.legend = FALSE,
+                       labels = c("", "C"))
+                       
+plot_conf
+ggsave(plot_conf, file = "plot_conf.svg")
 
 ## ** bayesian
-fit_conf <- brm(conf ~ accuracy_gabor * size * position * rt_gabor_centered + (1 * size * position * rt_gabor_centered | subject_id),
+fit_conf <- brm(conf ~ accuracy_gabor * size * position * rt_gabor_centered + (1 * accuracy_gabor * size * position * rt_gabor_centered | subject_id),
                 init_r = 0.05,
         data = data,
     family=cumulative("probit"),
     prior = c(set_prior("normal(0,1)", class = "b")),
     cores = 4, chains = 4,
     control = list(adapt_delta = .95,  max_treedepth = 12),
-    iter = 6000,  warmup = 4000, seed = 123,
+    iter = 4000,  warmup = 2000, seed = 123,
     save_model = 'conf.stan',
     save_pars = save_pars(all = TRUE)
 )
