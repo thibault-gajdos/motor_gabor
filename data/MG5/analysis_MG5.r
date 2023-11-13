@@ -198,6 +198,33 @@ tab_model(l.conf, file = "conf.html")
 tab_model(l.acc, l.conf, file = "acc_conf.html",  show.ci = FALSE, digits.p = 3)
 summary(l.conf)
 
+################################################
+## extra
+data$mt <- data$rt_gabor - data$OOZ_time
+data$mt_centered <- data$mt - mean(data$mt)
+l.conf2 <- clmm(conf_ord ~ accuracy_gabor * size * position * (dt_centered + mt_centered) + (1 * accuracy_gabor * size * position * (dt_centered + mt_centered) | subject_id),
+                  data = data,
+                  link = c("probit"))
+summary(l.conf2)
+
+predict <- ggemmeans(l.conf2, c('mt_centered','size'))
+plot2 <- plot(predict) + 
+  labs(x = "Centered response Time (ms)", 
+       y = "probability", 
+       title = "Confidence as a function of \n Response Time and Size") +
+    theme(plot.title = element_text(hjust = 0.5))
+plot2
+
+predict <- ggemmeans(l.conf2, c('dt_centered','size'))
+plot3 <- plot(predict) + 
+  labs(x = "Centered decision Time (ms)", 
+       y = "probability", 
+       title = "Confidence as a function of \n Decision Time and Size") +
+    theme(plot.title = element_text(hjust = 0.5))
+plot3
+
+#################################################
+
 ## plot
 ## size:accuracy interaction
 predict <- ggemmeans(l.conf, c('size','accuracy_gabor'))
