@@ -25,7 +25,6 @@ data$dt <-  data$OOZ_time
 ## * preliminary analysis
 ## rt, accuracy, conf mean by subject
 
-nrow(data)
 d <- data  %>%
   group_by(subject_id) %>%
   summarise(rt = mean(rt_gabor), accuracy = mean(acc_num), conf = mean(conf))
@@ -90,17 +89,24 @@ plot.dt <- ggplot(data, aes(x=size, y=OOZ_time)) +
 ggsave(plot.rt, file = "dt_violin.jpeg")
 
 ## ** frequentist
-l.rt <- lmer_alt(rt_gabor ~ accuracy_gabor + size +  position+ (1+accuracy_gabor+size+position| subject_id), data = data)
+l.rt <- lmer_alt(rt_gabor ~ accuracy_gabor + size +  position+ (1+accuracy_gabor+size+position | subject_id), data = data)
 summary(l.rt)
 
 
-l.dt <- lmer_alt(OOZ_time ~ accuracy_gabor + size + position + (1+accuracy_gabor*size+position | subject_id), data = data)
+l.dt <- lmer_alt(OOZ_time ~ accuracy_gabor + size + position + (1+accuracy_gabor+size+position | subject_id), data = data)
 ## singular
 
-l.dt <- lmer_alt(OOZ_time ~ accuracy_gabor +size  + position + (1+accuracy_gabor+size+position || subject_id), data = data)
 summary(l.dt)
-## singumar
+summary(rePCA(l.dt))
 
+## remove mixed effect correlation
+l.dt <- lmer_alt(OOZ_time ~ accuracy_gabor +size  + position + (1+accuracy_gabor+size+position || subject_id), data = data)
+
+## singular
+summary(l.dt)
+summary(rePCA(l.dt))
+
+## remove size
 l.dt <- lmer_alt(OOZ_time ~ accuracy_gabor +size  + position + (1+accuracy_gabor+position | subject_id), data = data)
 summary(l.dt)
 
@@ -302,3 +308,103 @@ save(fit_conf, file = 'conf.rdata')
 tab_model(fit_conf, file = "conf_bayes_MG5.html")
 
 
+## * Meta-d'
+library(metaSDT)
+head(data)
+md.LL.small <- data %>%
+    filter(expected_response == 'left', response == 'left', size == 'small') %>%
+    count(subject_id ,  expected_response, response, conf) %>%
+    spread(conf, n) %>%
+    replace(is.na(.), 0) %>%
+    mutate(LL.small = Map(c, `4`,`3`,`2`,`1`)) %>%
+    select(subject_id , LL.small)
+md.LR.small <- data %>%
+      filter(expected_response ==  'left', response == 'right',size == 'small') %>%
+      count(subject_id,  expected_response, response, conf) %>%
+      spread(conf, n) %>%
+      replace(is.na(.), 0) %>%
+      mutate(LR.small = Map(c, `1`,`2`,`3`,`4`)) %>%
+      select(subject_id, LR.small)
+md.L.small <- full_join(md.LL.small,md.LR.small) %>%
+      mutate(L.small = Map(c,LL.small,LR.small)) %>%
+      select(subject_id, L.small)
+
+md.RL.small <- data %>%
+      filter(expected_response == 'right', response == 'left', size == "small") %>%
+      count(subject_id,  expected_response, response, conf) %>%
+      spread(conf, n) %>%
+      replace(is.na(.), 0) %>%
+      mutate(RL.small =Map(c, `4`,`3`,`2`,`1`)) %>%
+      select(subject_id, RL.small)
+md.RR.small <- data %>%
+      filter(expected_response == 'right', response == 'right',size=='small') %>%
+      count(subject_id,  expected_response, response, conf) %>%
+      spread(conf, n) %>%
+      replace(is.na(.), 0) %>%
+      mutate(RR.small = Map(c, `1`,`2`,`3`,`4`)) %>%
+      select(subject_id, RR.small)
+md.R.small <- full_join(md.RL.small,md.RR.small) %>%
+      mutate(R.small = Map(c,RL.small,RR.small)) %>%
+      select(subject_id, R.small)
+md.small <- full_join(md.L.small, md.R.small) %>%
+    mutate(Z = Map(fit_meta_d_MLE, L.small, R.small)) %>%
+    unnest(Z) %>%
+    select(subject_id, M_ratio) %>%
+    distinct(subject_id, M_ratio) %>%
+    rename(md.small = M_ratio)
+
+md.LL.big <- data %>%
+    filter(expected_response == 'left', response == 'left', size == 'big') %>%
+    count(subject_id ,  expected_response, response, conf) %>%
+    spread(conf, n) %>%
+    replace(is.na(.), 0) %>%
+    mutate(LL.big = Map(c, `4`,`3`,`2`,`1`)) %>%
+    select(subject_id , LL.big)
+md.LR.big <- data %>%
+      filter(expected_response ==  'left', response == 'right',size == 'big') %>%
+      count(subject_id,  expected_response, response, conf) %>%
+      spread(conf, n) %>%
+      replace(is.na(.), 0) %>%
+      mutate(LR.big = Map(c, `1`,`2`,`3`,`4`)) %>%
+      select(subject_id, LR.big)
+md.L.big <- full_join(md.LL.big,md.LR.big) %>%
+      mutate(L.big = Map(c,LL.big,LR.big)) %>%
+      select(subject_id, L.big)
+
+md.RL.big <- data %>%
+      filter(expected_response == 'right', response == 'left', size == "big") %>%
+      count(subject_id,  expected_response, response, conf) %>%
+      spread(conf, n) %>%
+      replace(is.na(.), 0) %>%
+      mutate(RL.big =Map(c, `4`,`3`,`2`,`1`)) %>%
+      select(subject_id, RL.big)
+
+md.RR.big <- data %>%
+      filter(expected_response == 'right', response == 'right',size=='big') %>%
+      count(subject_id,  expected_response, response, conf) %>%
+      spread(conf, n) %>%
+      replace(is.na(.), 0) %>%
+      mutate(RR.big = Map(c, `1`,`2`,`3`,`4`)) %>%
+      select(subject_id, RR.big)
+md.R.big <- full_join(md.RL.big,md.RR.big) %>%
+    mutate(RL.big = ifelse(RL.big == 'NULL', list(c(0,0,0,0)), RL.big)) %>%
+    mutate(R.big = Map(c,RL.big,RR.big)) %>%
+    select(subject_id, R.big)
+
+md.big <- full_join(md.L.big, md.R.big)%>%
+    mutate(Z = Map(fit_meta_d_MLE, L.big, R.big)) %>%
+    unnest(Z) %>%
+    select(subject_id, M_ratio) %>%
+    distinct(subject_id, M_ratio) %>%
+    rename(md.big = M_ratio)
+
+md <- full_join(md.small, md.big) %>%
+    mutate(small_big = md.small - md.big)
+t.test(md$md.small, md$md.big, paired = TRUE)
+d.md <- md %>%
+    summarise(small_big = mean(small_big), small = mean(md.small), big = mean(md.big),
+              sd.small = sd(md.small), sd.big= sd(md.big))
+kable(d.md)
+## | small_big|     small|      big|  sd.small|    sd.big|
+## |---------:|---------:|--------:|---------:|---------:|
+## | 0.0364242| 0.9813082| 0.944884| 0.3683584| 0.6267939|
