@@ -187,3 +187,12 @@ fit_conf <- brm(conf ~ accuracy_gabor  * congruency * effector * effector_order 
 save(fit_conf, file = 'conf_MG2.rdata')
 tab_model(fit_conf, file = "conf_bayes_MG2.html")
 
+
+## additional
+
+
+
+l <- lmer_alt(rt_conf ~    accuracy_gabor  * congruency +
+                  (1 +  accuracy_gabor  + congruency |subject_id), data =  data)
+summary(l)
+data %>% group_by( accuracy_gabor, congruency) %>% summarise(rt_conf = mean(rt_conf))
