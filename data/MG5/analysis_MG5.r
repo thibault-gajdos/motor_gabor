@@ -401,6 +401,15 @@ md.big <- full_join(md.L.big, md.R.big)%>%
 md <- full_join(md.small, md.big) %>%
     mutate(small_big = md.small - md.big)
 t.test(md$md.small, md$md.big, paired = TRUE)
+## data:  md$md.small and md$md.big
+## t = 0.31178, df = 23, p-value = 0.758
+## alternative hypothesis: true mean difference is not equal to 0
+## 95 percent confidence interval:
+##  -0.2052518  0.2781002
+## sample estimates:
+## mean difference 
+##      0.03642421 
+
 d.md <- md %>%
     summarise(small_big = mean(small_big), small = mean(md.small), big = mean(md.big),
               sd.small = sd(md.small), sd.big= sd(md.big))
@@ -408,3 +417,66 @@ kable(d.md)
 ## | small_big|     small|      big|  sd.small|    sd.big|
 ## |---------:|---------:|--------:|---------:|---------:|
 ## | 0.0364242| 0.9813082| 0.944884| 0.3683584| 0.6267939|
+
+## * Plot revision
+
+## ** conf-size (by RT)
+d.fast <- data %>%
+    group_by(subject_id) %>%
+    filter(rt_gabor < median(rt_gabor)) %>%
+    ungroup() %>%
+    group_by(subject_id, size) %>%
+    summarise(confidence = mean(conf)) %>%
+    mutate(RT = "fast responses") %>%
+    ungroup()
+d.slow <- data %>%
+    group_by(subject_id) %>%
+    filter(rt_gabor >= median(rt_gabor)) %>%
+    ungroup() %>%
+    group_by(subject_id, size) %>%
+    summarise(confidence = mean(conf)) %>%
+    mutate(RT = "slow responses") %>%
+    ungroup()
+d <- full_join(d.fast, d.slow)
+
+plot <- ggplot(data = d, aes(x = size, y = confidence)) +
+    geom_bar(aes(size, confidence, fill = size), position='dodge', stat='summary', fun='mean') +
+    geom_line(aes(group=subject_id)) +
+    geom_point() +
+    facet_wrap(RT ~ .) +
+    labs(fill = "Circle size") +
+    xlab('Circle size')
+plot
+ggsave('conf_size.svg', plot)
+
+## ** conf-acc (by RT)
+d.fast <- data %>%
+    group_by(subject_id) %>%
+    filter(rt_gabor < median(rt_gabor)) %>%
+    ungroup() %>%
+    group_by(accuracy_gabor,  size) %>%
+    summarise(confidence = mean(conf)) %>%
+    rename(accuracy = accuracy_gabor) %>%
+    mutate(RT = "fast responses") %>%
+    ungroup()
+d.slow <- data %>%
+    group_by(subject_id) %>%
+    filter(rt_gabor >= median(rt_gabor)) %>%
+    ungroup() %>%
+    group_by(accuracy_gabor,  size) %>%
+    summarise(confidence = mean(conf)) %>%
+    rename(accuracy = accuracy_gabor) %>%
+    mutate(RT = "slow responses") %>%
+    ungroup()
+d <- full_join(d.fast, d.slow) %>%
+    mutate(ifelse(accuracy == 0, 'error','correct'))
+
+plot <- ggplot(data = d, aes(x = accuracy, y = confidence, color = size)) +
+    geom_line(aes(group = size, color = size)) +
+    geom_point() +
+    scale_x_discrete(labels=c("0" = "error", "1" = "correct"))+
+    labs(color = "Circle size")+
+    facet_wrap(RT ~ .)
+
+plot
+ggsave('conf_acc_size.svg', plot)
