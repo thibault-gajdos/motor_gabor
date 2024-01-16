@@ -37,6 +37,12 @@ mean(d$conf)
 sd(d$conf)
 
 ## rt, accuracy, conf mean by condition
+d <- data  %>%
+    group_by(subject_id) %>%
+    summarise(mean_rt = mean(rt_gabor), sd_rt = sd(rt_gabor), mean_dt = mean(dt), sd_dt = sd(dt), accuracy = mean(acc_num),  sd_conf = sd(conf), 
+              gabor_contrast = mean(gabor.contrast)) %>%
+    mutate(bias = mean_conf-accuracy)
+tab_df(d)
 
 d <- data  %>%
     group_by(size, subject_id) %>%
@@ -44,7 +50,7 @@ d <- data  %>%
     ungroup() %>%
     group_by(size) %>%
     summarise(mean_rt = mean(rt), mean_dt = mean(dt), mean_accuracy = mean(accuracy), mean_conf = mean(conf),
-              sd_rt = sd(rt),  sd_dt = sd(dt), sd_accuracy = sd(accuracy), sd_conf = sd(conf))
+              sd_rt = sd(rt),  sd_dt = sd(dt), sd_accuracy = sd(accuracy), sd_conf = sd(conf)) 
 
 d_indiv <- data  %>%
     group_by(size, subject_id) %>%
@@ -439,15 +445,15 @@ d.slow <- data %>%
     ungroup()
 d <- full_join(d.fast, d.slow)
 
-plot <- ggplot(data = d, aes(x = size, y = confidence)) +
+plot_1 <- ggplot(data = d, aes(x = size, y = confidence)) +
     geom_bar(aes(size, confidence, fill = size), position='dodge', stat='summary', fun='mean') +
     geom_line(aes(group=subject_id)) +
     geom_point() +
     facet_wrap(RT ~ .) +
     labs(fill = "Circle size") +
     xlab('Circle size')
-plot
-ggsave('conf_size.svg', plot)
+
+ggsave('conf_size.svg', plot_1)
 
 ## ** conf-acc (by RT)
 d.fast <- data %>%
@@ -471,12 +477,16 @@ d.slow <- data %>%
 d <- full_join(d.fast, d.slow) %>%
     mutate(ifelse(accuracy == 0, 'error','correct'))
 
-plot <- ggplot(data = d, aes(x = accuracy, y = confidence, color = size)) +
+plot_2 <- ggplot(data = d, aes(x = accuracy, y = confidence, color = size)) +
     geom_line(aes(group = size, color = size)) +
     geom_point() +
     scale_x_discrete(labels=c("0" = "error", "1" = "correct"))+
     labs(color = "Circle size")+
     facet_wrap(RT ~ .)
 
-plot
-ggsave('conf_acc_size.svg', plot)
+ggsave('conf_acc_size.svg', plot_2)
+
+plot_conf <- ggarrange(plot_1, plot_2, nrow = 2,  common.legend = TRUE, labels = "AUTO")
+                       
+plot_conf
+ggsave(plot_conf, file = "plot_conf.svg")
