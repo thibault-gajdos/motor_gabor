@@ -460,8 +460,11 @@ d.fast <- data %>%
     group_by(subject_id) %>%
     filter(rt_gabor < median(rt_gabor)) %>%
     ungroup() %>%
-    group_by(accuracy_gabor,  size) %>%
-    summarise(confidence = mean(conf)) %>%
+    group_by(subject_id, accuracy_gabor,  size) %>%
+    summarise(conf = mean(conf)) %>%
+    ungroup() %>%
+    group_by(accuracy_gabor,  size)%>%
+    summarise(confidence = mean(conf), sd.confidence = sd(conf)) %>%
     rename(accuracy = accuracy_gabor) %>%
     mutate(RT = "fast responses") %>%
     ungroup()
@@ -469,8 +472,11 @@ d.slow <- data %>%
     group_by(subject_id) %>%
     filter(rt_gabor >= median(rt_gabor)) %>%
     ungroup() %>%
-    group_by(accuracy_gabor,  size) %>%
-    summarise(confidence = mean(conf)) %>%
+    group_by(subject_id, accuracy_gabor,  size) %>%
+    summarise(conf = mean(conf)) %>%
+    ungroup() %>%
+    group_by(accuracy_gabor,  size)%>%
+    summarise(confidence = mean(conf), sd.confidence = sd(conf)) %>%
     rename(accuracy = accuracy_gabor) %>%
     mutate(RT = "slow responses") %>%
     ungroup()
@@ -480,6 +486,8 @@ d <- full_join(d.fast, d.slow) %>%
 plot_2 <- ggplot(data = d, aes(x = accuracy, y = confidence, color = size)) +
     geom_line(aes(group = size, color = size)) +
     geom_point() +
+    geom_errorbar(aes(ymin=confidence-sd.confidence, ymax=confidence+sd.confidence), width=.2,
+                 position=position_dodge(0.05)) +
     scale_x_discrete(labels=c("0" = "error", "1" = "correct"))+
     labs(color = "Circle size")+
     facet_wrap(RT ~ .)
