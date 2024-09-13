@@ -7,8 +7,8 @@ library('svglite')
 
 load('big_data_final.rda')
 data <- big_data %>%
-    filter(participants == 'mg1')   ## experience 1
-   
+    filter(participants == 'mg1')   ## experience 2
+ 
 ## define variables and  contrasts
 data$conf_ord = as.factor(data$conf)
 data$rt_gabor_centered <- data$rt_gabor - mean(data$rt_gabor, na.rm = TRUE)
@@ -232,6 +232,56 @@ plot <- ggplot(data = predict, aes(x = confidence, y = predicted, colour = congr
 print(plot)
 ggsave('conf_acc_x_order_MG1.jpeg', plot)
 
+## acc:effector:effector_order interaction 
+posthoc <- emmeans(l.conf, ~ accuracy_gabor * effector * effector_order)
+pairwise_comparisons <- pairs(posthoc, adjust = "tukey")
+summary(pairwise_comparisons)
+
+predict <- ggemmeans(l.conf, c('accuracy_gabor','effector','effector_order'))
+predict <- as.data.frame(predict) %>%
+    rename(accuracy = x, confidence = response.level, effector = group, order = facet)
+labels.effector = c("0" = "different", "1" = "same")
+labels.order = c(other1 = "different first", same1= "same first")
+
+ ## accuracy_gabor0 other other1 - accuracy_gabor0 same other1    0.5337 0.139 Inf   3.828  0.0032
+ ## accuracy_gabor1 other other1 - accuracy_gabor1 same same1    -0.8129 0.238 Inf  -3.416  0.0147
+ ## accuracy_gabor0 other other1 - accuracy_gabor0 other same1    0.0248 0.363 Inf   0.068  1.0000
+ ## accuracy_gabor0 other other1 - accuracy_gabor0 same same1    -0.2317 0.297 Inf  -0.781  0.9941
+ ## accuracy_gabor1 other other1 - accuracy_gabor1 same other1   -0.0853 0.115 Inf  -0.744  0.9956
+ ## accuracy_gabor1 other other1 - accuracy_gabor1 other same1   -0.5316 0.297 Inf  -1.791  0.6262
+ ## accuracy_gabor0 same other1 - accuracy_gabor0 other same1    -0.5090 0.359 Inf  -1.416  0.8502
+ ## accuracy_gabor0 same other1 - accuracy_gabor0 same same1     -0.7655 0.294 Inf  -2.601  0.1554
+ ## accuracy_gabor1 same other1 - accuracy_gabor1 other same1    -0.4463 0.310 Inf  -1.441  0.8381
+ ## accuracy_gabor1 same other1 - accuracy_gabor1 same same1     -0.7277 0.256 Inf  -2.844  0.0846
+ ## accuracy_gabor1 other same1 - accuracy_gabor1 same same1     -0.2814 0.117 Inf  -2.405  0.2387
+
+
+plot <- ggplot(data = predict, aes(x = confidence, y = predicted, colour = effector)) +
+    geom_point(position = position_dodge(width = .5)) +
+    geom_errorbar(aes(ymin = conf.low, ymax = conf.high),
+                  width = .5, position = "dodge") + 
+    facet_grid(order ~ accuracy, switch = "both",
+               labeller=labeller(accuracy = labels.accuracy, order = labels.order)) +
+    labs(y = "Confidence", 
+         title = "Accuracy x Effector x Order interaction on Confidence") +
+    theme(plot.title = element_text(hjust = 0.5))
+plot
+ggsave('conf_accuracy_effector__order_MG1.jpeg', plot)
+
+
+
+plot <- ggplot(data = predict, aes(x = confidence, y = predicted, colour = congruency)) +
+    geom_point(position = position_dodge(width = .5)) +
+    geom_errorbar(aes(ymin = conf.low, ymax = conf.high),
+                  width = .5, position = "dodge") + 
+    facet_grid(. ~ accuracy, switch = "both",
+               labeller=labeller(accuracy = labels.accuracy)) +
+    labs(y = "Probabilty", 
+        title = "Accuracy x Congruency interaction on Confidence") +
+    theme(plot.title = element_text(hjust = 0.5))
+print(plot)
+ggsave('conf_acc_x_order_MG1.jpeg', plot)
+     
 
 ## ** bayesian
 fit_conf <- brm(conf ~ accuracy_gabor  * congruency * effector * effector_order +  rt_gabor_centered +
@@ -248,4 +298,57 @@ fit_conf <- brm(conf ~ accuracy_gabor  * congruency * effector * effector_order 
 )
 save(fit_conf, file = 'conf.rdata')
 tab_model(fit_conf, file = "conf_bayes_MG1.html")
+
+
+## * Plot revision
+
+## CONFIDENCE
+d <- data %>%
+    group_by(subject_id, congruency) %>%
+    summarise(confidence = mean(conf)) %>%
+    ungroup()
+
+plot_1 <- ggplot(data = d, aes(x = congruency, y = confidence)) +
+    coord_cartesian(ylim = c(1, 4)) +
+    geom_bar(aes(congruency, confidence, fill = congruency), position='dodge', stat='summary', fun='mean')+
+    scale_y_continuous(expand = c(0, 0))  +
+    geom_line(aes(group=subject_id)) +
+    geom_point() +
+    labs(fill = "Congruency") +
+    xlab('Congruency')
+plot_1
+ggsave('conf_congruency_exp1.svg', plot_1)
+
+## CONFIDENCE VS ACCURACY
+d <- data %>%
+    group_by(subject_id, accuracy_gabor) %>%
+    summarise(confidence = mean(conf)) %>%
+    ungroup()
+plot_2 <- ggplot(data = d, aes(x = accuracy_gabor, y = confidence)) +
+    coord_cartesian(ylim = c(1, 4)) +
+    geom_bar(aes(accuracy_gabor, confidence, fill = accuracy_gabor), position='dodge', stat='summary', fun='mean')+
+    scale_y_continuous(expand = c(0, 0))  +
+    geom_line(aes(group=subject_id)) +
+    geom_point() +
+    labs(fill = "Accuracy") +
+    xlab('Accuracy')
+plot_2
+ggsave('conf_accuracy_exp1.svg', plot_2)
+
+## EFFECTOR 
+d <- data %>%
+    group_by(subject_id, effector) %>%
+    mutate(effector = fct_rev(effector)) %>%
+    summarise(confidence = mean(conf)) %>%
+    ungroup()
+plot_3 <- ggplot(data = d, aes(x = effector, y = confidence)) +
+    coord_cartesian(ylim = c(1, 4)) +
+    geom_bar(aes(effector, confidence, fill = effector), position='dodge', stat='summary', fun='mean')+
+    scale_y_continuous(expand = c(0, 0))  +
+    geom_line(aes(group=subject_id)) +
+    geom_point() +
+    labs(fill = "Effector") +
+    xlab('Effector')
+plot_3
+ggsave('conf_effector_exp1.svg', plot_3)
 

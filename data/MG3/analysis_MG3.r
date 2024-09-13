@@ -173,3 +173,56 @@ fit_conf <- brm(conf ~ accuracy_gabor  * congruency +  rt_gabor_centered +
 save(fit_conf, file = 'conf.rdata')
 tab_model(fit_conf, file = "conf_bayes_MG3.html")
 
+
+
+## * Plot revision
+## CONFIDENCE
+d <- data %>%
+    group_by(subject_id, congruency) %>%
+    summarise(confidence = mean(conf)) %>%
+    ungroup()
+
+plot_1 <- ggplot(data = d, aes(x = congruency, y = confidence)) +
+    coord_cartesian(ylim = c(1, 4)) +
+    geom_bar(aes(congruency, confidence, fill = congruency), position='dodge', stat='summary', fun='mean')+
+    scale_y_continuous(expand = c(0, 0))  +
+    geom_line(aes(group=subject_id)) +
+    geom_point() +
+    labs(fill = "Congruency") +
+    xlab('Congruency')
+plot_1
+ggsave('conf_congruency_exp3.svg', plot_1)
+
+## CONFIDENCE VS ACCURACY
+d <- data %>%
+    group_by(subject_id, accuracy_gabor) %>%
+    summarise(confidence = mean(conf)) %>%
+    ungroup()
+plot_2 <- ggplot(data = d, aes(x = accuracy_gabor, y = confidence)) +
+    coord_cartesian(ylim = c(1, 4)) +
+    geom_bar(aes(accuracy_gabor, confidence, fill = accuracy_gabor), position='dodge', stat='summary', fun='mean')+
+    scale_y_continuous(expand = c(0, 0))  +
+    geom_line(aes(group=subject_id)) +
+    geom_point() +
+    labs(fill = "Accuracy") +
+    xlab('Accuracy')
+plot_2
+ggsave('conf_accuracy_exp2.svg', plot_2)
+
+## EFFECTOR 
+d <- data %>%
+    group_by(subject_id, effector) %>%
+    mutate(effector = fct_rev(effector)) %>%
+    summarise(confidence = mean(conf)) %>%
+    ungroup()
+plot_3 <- ggplot(data = d, aes(x = effector, y = confidence)) +
+    coord_cartesian(ylim = c(1, 4)) +
+    geom_bar(aes(effector, confidence, fill = effector), position='dodge', stat='summary', fun='mean')+
+    scale_y_continuous(expand = c(0, 0))  +
+    geom_line(aes(group=subject_id)) +
+    geom_point() +
+    labs(fill = "Effector") +
+    xlab('Effector')
+plot_3
+ggsave('conf_effector_exp1.svg', plot_3)
+
