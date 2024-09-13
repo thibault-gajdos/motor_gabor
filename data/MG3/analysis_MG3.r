@@ -204,10 +204,11 @@ plot_2 <- ggplot(data = d, aes(x = accuracy_gabor, y = confidence)) +
     scale_y_continuous(expand = c(0, 0))  +
     geom_line(aes(group=subject_id)) +
     geom_point() +
+    scale_x_discrete(labels = c("0" = "Error", "1" = "Correct")) +
     labs(fill = "Accuracy") +
-    xlab('Accuracy')
+    scale_fill_discrete(name = "Accuracy", labels = c("Error", "Correct"))
 plot_2
-ggsave('conf_accuracy_exp2.svg', plot_2)
+ggsave('conf_accuracy_exp3.svg', plot_2)
 
 ## EFFECTOR 
 d <- data %>%

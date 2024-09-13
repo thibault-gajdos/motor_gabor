@@ -7,7 +7,7 @@ library('svglite')
 
 load('big_data_final.rda')
 data <- big_data %>%
-    filter(participants == 'mg1')   ## experience 2
+    filter(participants == 'mg1')   ## experience 1
  
 ## define variables and  contrasts
 data$conf_ord = as.factor(data$conf)
@@ -232,6 +232,51 @@ plot <- ggplot(data = predict, aes(x = confidence, y = predicted, colour = congr
 print(plot)
 ggsave('conf_acc_x_order_MG1.jpeg', plot)
 
+## acc:effector interaction 
+posthoc <- emmeans(l.conf, ~ accuracy_gabor * effector)
+pairwise_comparisons <- pairs(posthoc, adjust = "tukey")
+summary(pairwise_comparisons)
+
+predict <- ggemmeans(l.conf, c('accuracy_gabor','effector'))
+predict <- as.data.frame(predict) %>%
+    rename(accuracy = x, confidence = response.level, effector = group)
+labels.accuracy = c("0" = "error", "1" = "correct")
+
+
+plot <- ggplot(data = predict, aes(x = confidence, y = predicted, colour = effector)) +
+    geom_point(position = position_dodge(width = .5)) +
+    geom_errorbar(aes(ymin = conf.low, ymax = conf.high),
+                  width = .5, position = "dodge") + 
+    facet_grid(. ~ accuracy, switch = "both",
+               labeller=labeller(accuracy = labels.accuracy)) +
+    labs(y = "Probabilty", 
+        title = "Accuracy x Effector interaction on Confidence") +
+    theme(plot.title = element_text(hjust = 0.5))
+print(plot)
+ggsave('conf_acc_effector_MG1.jpeg', plot)
+
+## effector:effector_order interaction 
+posthoc <- emmeans(l.conf, ~ effector_order * effector)
+pairwise_comparisons <- pairs(posthoc, adjust = "tukey")
+summary(pairwise_comparisons)
+## other1 same - same1 same     -0.747 0.226 Inf  -3.308  0.0052
+
+predict <- ggemmeans(l.conf, c('effector_order','effector'))
+predict <- as.data.frame(predict) %>%
+    rename(effector_order = x, confidence = response.level, effector = group)
+
+
+plot <- ggplot(data = predict, aes(x = confidence, y = predicted, colour = effector)) +
+    geom_point(position = position_dodge(width = .5)) +
+    geom_errorbar(aes(ymin = conf.low, ymax = conf.high),
+                  width = .5, position = "dodge") + 
+    facet_grid(. ~ effector_order, switch = "both") +
+    labs(y = "Probabilty", 
+        title = "Effector_order x Effector interaction on Confidence") +
+    theme(plot.title = element_text(hjust = 0.5))
+print(plot)
+ggsave('conf_efforder_effector_MG1.jpeg', plot)
+
 ## acc:effector:effector_order interaction 
 posthoc <- emmeans(l.conf, ~ accuracy_gabor * effector * effector_order)
 pairwise_comparisons <- pairs(posthoc, adjust = "tukey")
@@ -330,9 +375,11 @@ plot_2 <- ggplot(data = d, aes(x = accuracy_gabor, y = confidence)) +
     scale_y_continuous(expand = c(0, 0))  +
     geom_line(aes(group=subject_id)) +
     geom_point() +
+    scale_x_discrete(labels = c("0" = "Error", "1" = "Correct")) +
     labs(fill = "Accuracy") +
-    xlab('Accuracy')
+    scale_fill_discrete(name = "Accuracy", labels = c("Error", "Correct"))
 plot_2
+
 ggsave('conf_accuracy_exp1.svg', plot_2)
 
 ## EFFECTOR 
