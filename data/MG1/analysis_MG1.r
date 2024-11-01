@@ -234,7 +234,7 @@ ggsave('conf_acc_x_order_MG1.jpeg', plot)
 
 ## acc:effector interaction 
 posthoc <- emmeans(l.conf, ~ accuracy_gabor * effector)
-pairwise_comparisons <- pairs(posthoc, adjust = "tukey")
+pairwise_comparisons <- pairs(posthoc)
 summary(pairwise_comparisons)
 
 predict <- ggemmeans(l.conf, c('accuracy_gabor','effector'))
@@ -398,4 +398,19 @@ plot_3 <- ggplot(data = d, aes(x = effector, y = confidence)) +
     xlab('Effector')
 plot_3
 ggsave('conf_effector_exp1.svg', plot_3)
+
+## EFFECTOR on ACCURACY
+d <- data %>%
+    group_by(subject_id, effector) %>%
+    mutate(effector = fct_rev(effector)) %>%
+    summarise(accuracy = mean(acc_gabor_num)) %>%
+    ungroup()
+plot_4 <- ggplot(data = d, aes(x = effector, y = accuracy)) +
+    geom_bar(aes(effector, accuracy, fill = effector), position='dodge', stat='summary', fun='mean')+
+    geom_line(aes(group=subject_id)) +
+    geom_point() +
+    labs(fill = "Effector") +
+    xlab('Effector')
+plot_4
+ggsave('acc_effector_exp1.svg', plot_4)
 
