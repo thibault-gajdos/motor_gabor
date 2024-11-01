@@ -1,15 +1,16 @@
-// generated with brms 2.18.0
+// generated with brms 2.21.0
 functions {
 }
 data {
   int<lower=1> N;  // total number of observations
-  int Y[N];  // response variable
+  array[N] int Y;  // response variable
   int<lower=1> K;  // number of population-level effects
   matrix[N, K] X;  // population-level design matrix
+  int<lower=1> Kc;  // number of population-level effects after centering
   // data for group-level effects of ID 1
   int<lower=1> N_1;  // number of grouping levels
   int<lower=1> M_1;  // number of coefficients per level
-  int<lower=1> J_1[N];  // grouping indicator per observation
+  array[N] int<lower=1> J_1;  // grouping indicator per observation
   // group-level predictor values
   vector[N] Z_1_1;
   vector[N] Z_1_2;
@@ -20,7 +21,6 @@ data {
   int prior_only;  // should the likelihood be ignored?
 }
 transformed data {
-  int Kc = K - 1;
   matrix[N, Kc] Xc;  // centered version of X without an intercept
   vector[Kc] means_X;  // column means of X before centering
   for (i in 2:K) {
@@ -29,10 +29,10 @@ transformed data {
   }
 }
 parameters {
-  vector[Kc] b;  // population-level effects
+  vector[Kc] b;  // regression coefficients
   real Intercept;  // temporary intercept for centered predictors
   vector<lower=0>[M_1] sd_1;  // group-level standard deviations
-  vector[N_1] z_1[M_1];  // standardized group-level effects
+  array[M_1] vector[N_1] z_1;  // standardized group-level effects
 }
 transformed parameters {
   vector[N_1] r_1_1;  // actual group-level effects

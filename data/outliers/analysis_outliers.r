@@ -24,7 +24,7 @@ data$conf_ord = as.factor(data$conf)
 data1 <- data %>%
     filter(participants == 'mg1'|participants == 'mg1_excluded')   ## experience 1
 data2 <- data %>%
-    filter(participants == 'mg1'|participants == 'mg1_excluded')   ## experience 2
+    filter(participants == 'mg2'|participants == 'mg2_excluded')   ## experience 2
    
 data1$rt_gabor_centered <- data1$rt_gabor - mean(data1$rt_gabor, na.rm = TRUE)
 data2$rt_gabor_centered <- data2$rt_gabor - mean(data2$rt_gabor, na.rm = TRUE)
@@ -119,5 +119,5 @@ fit2.conf <- brm(conf ~ accuracy_gabor  * congruency * effector * effector_order
     )
 save(fit2.conf, file = 'conf_outliers_MG2.rdata')
 
-tab_model(fit1.conf, fit2.conf, file = "conf_outliers.html")
 
+tab_model(fit1.conf, fit2.conf, file = "conf_outliers.html")

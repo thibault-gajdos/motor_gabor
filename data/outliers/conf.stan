@@ -1,4 +1,4 @@
-// generated with brms 2.18.0
+// generated with brms 2.21.0
 functions {
   /* cumulative-probit log-PDF for a single response
    * Args:
@@ -32,20 +32,33 @@ functions {
    * Returns:
    *   a scalar to be added to the log posterior
    */
-   real cumulative_probit_merged_lpmf(int y, real mu, real disc, vector thres, int[] j) {
+   real cumulative_probit_merged_lpmf(int y, real mu, real disc, vector thres, array[] int j) {
      return cumulative_probit_lpmf(y | mu, disc, thres[j[1]:j[2]]);
+   }
+  /* ordered-probit log-PDF for a single response and merged thresholds
+   * Args:
+   *   y: response category
+   *   mu: latent mean parameter
+   *   thres: vector of merged ordinal thresholds
+   *   j: start and end index for the applid threshold within 'thres'
+   * Returns:
+   *   a scalar to be added to the log posterior
+   */
+   real ordered_probit_merged_lpmf(int y, real mu, vector thres, array[] int j) {
+     return ordered_probit_lpmf(y | mu, thres[j[1]:j[2]]);
    }
 }
 data {
   int<lower=1> N;  // total number of observations
-  int Y[N];  // response variable
+  array[N] int Y;  // response variable
   int<lower=2> nthres;  // number of thresholds
   int<lower=1> K;  // number of population-level effects
   matrix[N, K] X;  // population-level design matrix
+  int<lower=1> Kc;  // number of population-level effects after centering
   // data for group-level effects of ID 1
   int<lower=1> N_1;  // number of grouping levels
   int<lower=1> M_1;  // number of coefficients per level
-  int<lower=1> J_1[N];  // grouping indicator per observation
+  array[N] int<lower=1> J_1;  // grouping indicator per observation
   // group-level predictor values
   vector[N] Z_1_1;
   vector[N] Z_1_2;
@@ -57,7 +70,6 @@ data {
   int prior_only;  // should the likelihood be ignored?
 }
 transformed data {
-  int Kc = K;
   matrix[N, Kc] Xc;  // centered version of X
   vector[Kc] means_X;  // column means of X before centering
   for (i in 1:K) {
@@ -66,10 +78,10 @@ transformed data {
   }
 }
 parameters {
-  vector[Kc] b;  // population-level effects
+  vector[Kc] b;  // regression coefficients
   ordered[nthres] Intercept;  // temporary thresholds for centered predictors
   vector<lower=0>[M_1] sd_1;  // group-level standard deviations
-  vector[N_1] z_1[M_1];  // standardized group-level effects
+  array[M_1] vector[N_1] z_1;  // standardized group-level effects
 }
 transformed parameters {
   real disc = 1;  // discrimination parameters
@@ -104,7 +116,7 @@ model {
       mu[n] += r_1_1[J_1[n]] * Z_1_1[n] + r_1_2[J_1[n]] * Z_1_2[n] + r_1_3[J_1[n]] * Z_1_3[n] + r_1_4[J_1[n]] * Z_1_4[n] + r_1_5[J_1[n]] * Z_1_5[n] + r_1_6[J_1[n]] * Z_1_6[n] + r_1_7[J_1[n]] * Z_1_7[n];
     }
     for (n in 1:N) {
-      target += cumulative_probit_lpmf(Y[n] | mu[n], disc, Intercept);
+      target += ordered_probit_lpmf(Y[n] | mu[n], Intercept);
     }
   }
   // priors including constants
