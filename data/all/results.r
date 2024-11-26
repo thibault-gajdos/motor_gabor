@@ -285,6 +285,7 @@ acc2 <- l.acc
 load(paste(dir,'MG3/fit_acc_MG3.rdata',sep=''))
 acc3 <- l.acc
 tab_model(acc1,acc2,acc3, file = "accuracy.html")
+stargazer(acc1, acc2, acc3, type = "latex",  title = "Accuracy",  out = "accuracys.tex")
 
 load(paste(dir,'MG1/fit_acc_bayes_MG1.rdata',sep=''))
 acc_bayes1 <- fit_acc
@@ -293,6 +294,7 @@ acc_bayes2 <- fit_acc
 load(paste(dir,'MG3/fit_acc_bayes_MG3.rdata',sep=''))
 acc_bayes3 <- fit_acc
 tab_model(acc_bayes1,acc_bayes2,acc_bayes3, file = "accuracy_bayes.html")
+
 
 #** rt
 load(paste(dir,'MG1/fit_rt_MG1.rdata',sep=''))
@@ -319,6 +321,12 @@ conf2 <- l.conf
 load(paste(dir,'MG3/fit_conf_MG3.rdata',sep=''))
 conf3 <- l.conf
 tab_model(conf1,conf2,conf3, file = "confidence.html")
+stargazer(conf1, conf2, conf3, type = "latex",  title = "Confidence",  out = "confidence.tex")
+texreg(list(conf1, conf2, conf3),   
+       file = "confidence.tex", 
+       booktabs = TRUE,
+       caption = "Confidence ",
+       label = "tab:regression_results")
 
 load(paste(dir,'MG1/fit_conf_bayes_MG1.rdata',sep=''))
 conf_bayes1 <- fit_conf
