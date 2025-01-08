@@ -30,26 +30,49 @@ contrasts(data$congruency) <-  contr.sum(2) ## incongruent: -1; congruent: 1
 
 ## ** frequentist
 
-l.rt <- lmer_alt(rt_gabor_centered*1000 ~  accuracy_gabor * congruency * effector * effector_order +
+l.rt <- lmer_alt(rt_gabor*1000 ~  accuracy_gabor * congruency * effector * effector_order +
                      (1 + accuracy_gabor + congruency + effector + effector_order  ||subject_id),
-                   REML = TRUE,
+                    family=inverse.gaussian(link="identity"),
                    data = data)
 summary(l.rt)
 summary(rePCA(l.rt))
 
 ## remove congruency
-l.rt <- lmer_alt(rt_gabor_centered*1000 ~  accuracy_gabor * congruency * effector * effector_order +
+l.rt <- lmer_alt(rt_gabor*1000 ~  accuracy_gabor * congruency * effector * effector_order +
                    (1  + accuracy_gabor + effector + effector_order  ||subject_id),
-                 REML = TRUE,
+                 family=exgaussian(link="identity"),
                  data = data)
+summary(l.rt)
+summary(rePCA(l.rt))
+
+## remove effector order
+l.rt <- lmer_alt(rt_gabor*1000 ~  accuracy_gabor * congruency * effector * effector_order +
+                   (1  + accuracy_gabor + effector  ||subject_id),
+                 family=inverse.gaussian(link="identity"),
+                 data = data)
+summary(l.rt)
+summary(rePCA(l.rt))
+
+## remove accuracy
+l.rt <- lmer_alt(rt_gabor*1000 ~  accuracy_gabor * congruency * effector * effector_order +
+                   (1  +  effector  ||subject_id),
+                 family=inverse.gaussian(link="identity"),
+                 data = data)
+
+l.rt <- lmer_alt(rt_gabor*1000 ~  accuracy_gabor * congruency * effector * effector_order +
+                   (1  | subject_id),
+                 family=inverse.gaussian(link="identity"),
+                 data = data)
+
 save(l.rt, file = 'fit_rt_MG2.rdata')
 tab_model(l.rt, file = "rt_MG2.html")
 
+
 ## ** bayesian
-fit.rt <- brm(rt_gabor_centered*1000 ~  accuracy_gabor * congruency * effector * effector_order +
+fit.rt <- brm(rt_gabor*1000 ~  accuracy_gabor * congruency * effector * effector_order +
                      (1 + accuracy_gabor + congruency + effector + effector_order  ||subject_id) ,
+              family=exgaussian(link="identity"),
            data = data,
-           prior = c(set_prior("normal(0,1)", class = "b")),
            cores = 4, chains = 4,
            control = list(adapt_delta = .95,  max_treedepth = 12),
            iter = 4000,  warmup = 2000, seed = 123,

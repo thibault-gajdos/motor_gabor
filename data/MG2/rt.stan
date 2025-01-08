@@ -1,4 +1,4 @@
-// generated with brms 2.18.0
+// generated with brms 2.21.0
 functions {
 }
 data {
@@ -6,10 +6,11 @@ data {
   vector[N] Y;  // response variable
   int<lower=1> K;  // number of population-level effects
   matrix[N, K] X;  // population-level design matrix
+  int<lower=1> Kc;  // number of population-level effects after centering
   // data for group-level effects of ID 1
   int<lower=1> N_1;  // number of grouping levels
   int<lower=1> M_1;  // number of coefficients per level
-  int<lower=1> J_1[N];  // grouping indicator per observation
+  array[N] int<lower=1> J_1;  // grouping indicator per observation
   // group-level predictor values
   vector[N] Z_1_1;
   vector[N] Z_1_2;
@@ -19,7 +20,6 @@ data {
   int prior_only;  // should the likelihood be ignored?
 }
 transformed data {
-  int Kc = K - 1;
   matrix[N, Kc] Xc;  // centered version of X without an intercept
   vector[Kc] means_X;  // column means of X before centering
   for (i in 2:K) {
@@ -28,11 +28,12 @@ transformed data {
   }
 }
 parameters {
-  vector[Kc] b;  // population-level effects
+  vector[Kc] b;  // regression coefficients
   real Intercept;  // temporary intercept for centered predictors
   real<lower=0> sigma;  // dispersion parameter
+  real<lower=0> beta;  // scale parameter
   vector<lower=0>[M_1] sd_1;  // group-level standard deviations
-  vector[N_1] z_1[M_1];  // standardized group-level effects
+  array[M_1] vector[N_1] z_1;  // standardized group-level effects
 }
 transformed parameters {
   vector[N_1] r_1_1;  // actual group-level effects
@@ -47,9 +48,10 @@ transformed parameters {
   r_1_4 = (sd_1[4] * (z_1[4]));
   r_1_5 = (sd_1[5] * (z_1[5]));
   lprior += normal_lpdf(b | 0,1);
-  lprior += student_t_lpdf(Intercept | 3, -34.9, 157.4);
+  lprior += student_t_lpdf(Intercept | 3, 670.3, 157.4);
   lprior += student_t_lpdf(sigma | 3, 0, 157.4)
     - 1 * student_t_lccdf(0 | 3, 0, 157.4);
+  lprior += gamma_lpdf(beta | 1, 0.1);
   lprior += student_t_lpdf(sd_1 | 3, 0, 157.4)
     - 5 * student_t_lccdf(0 | 3, 0, 157.4);
 }
@@ -58,12 +60,12 @@ model {
   if (!prior_only) {
     // initialize linear predictor term
     vector[N] mu = rep_vector(0.0, N);
-    mu += Intercept;
+    mu += Intercept + Xc * b;
     for (n in 1:N) {
       // add more terms to the linear predictor
       mu[n] += r_1_1[J_1[n]] * Z_1_1[n] + r_1_2[J_1[n]] * Z_1_2[n] + r_1_3[J_1[n]] * Z_1_3[n] + r_1_4[J_1[n]] * Z_1_4[n] + r_1_5[J_1[n]] * Z_1_5[n];
     }
-    target += normal_id_glm_lpdf(Y | Xc, mu, b, sigma);
+    target += exp_mod_normal_lpdf(Y | mu - beta, sigma, inv(beta));
   }
   // priors including constants
   target += lprior;

@@ -28,49 +28,47 @@ contrasts(data$congruency) <-  contr.sum(2) ## incongruent: -1; congruent: 1
 ## * RT
 
 ## ** frequentist
-
-l.rt <- lmer_alt(rt_gabor_centered*1000 ~  accuracy_gabor * congruency * effector * effector_order +
+l.rt <- lmer_alt(rt_gabor*1000 ~  accuracy_gabor * congruency * effector * effector_order +
                      (1 + accuracy_gabor + congruency + effector + effector_order  ||subject_id),
-                   REML = TRUE,
-                   data = data)
+                 family=inverse.gaussian(link="identity"), data = data)
 summary(l.rt)
 summary(rePCA(l.rt))
 
 ## remove congruency
-l.rt <- lmer_alt(rt_gabor_centered*1000 ~  accuracy_gabor * congruency * effector * effector_order +
+l.rt <- lmer_alt(rt_gabor*1000 ~  accuracy_gabor * congruency * effector * effector_order +
                    (1  + accuracy_gabor + effector + effector_order  ||subject_id),
-                 REML = TRUE,
-                 data = data)
+                 family=inverse.gaussian(link="identity"), data = data)
 summary(l.rt)
 summary(rePCA(l.rt))
 
 ## remove effector order
-l.rt <- lmer_alt(rt_gabor_centered*1000 ~  accuracy_gabor * congruency * effector * effector_order +
+l.rt <- lmer_alt(rt_gabor*1000 ~  accuracy_gabor * congruency * effector * effector_order +
                    (1  + accuracy_gabor + effector   ||subject_id),
-                 REML = TRUE,
-                 data = data)
+                 family=inverse.gaussian(link="identity"), data = data )
 save(l.rt, file = 'fit_rt_MG1.rdata')
 tab_model(l.rt, file = "rt_MG1.html")
 
+
 ## plot interactions
 ## effects are averaged over the levels of factors
-
+load('fit_rt_MG1.rdata')
+summary(l.rt)
 ## accuracy:order interaction 
-predict <-  ggemmeans(l.rt, c('accuracy_gabor','effector_order'))
-plot <- plot(predict) + 
-  labs(x = "Accuracy", 
-       y = "Centered Response Time (ms)", 
-       title = "Accuracy x Block Order interaction on RT") +
-    scale_x_continuous(breaks = c(0, 1), labels=c("error", "correct")) +
-    scale_colour_discrete(labels=c('feet first', 'hand first'), name = "Block order") +
-    theme(plot.title = element_text(hjust = 0.5))
-ggsave('rt_acc_x_order_MG1.jpeg', plot)
+## predict <-  ggemmeans(l.rt, c('accuracy_gabor','effector_order'))
+## plot <- plot(predict) + 
+##   labs(x = "Accuracy", 
+##        y = "Centered Response Time (ms)", 
+##        title = "Accuracy x Block Order interaction on RT") +
+##     scale_x_continuous(breaks = c(0, 1), labels=c("error", "correct")) +
+##     scale_colour_discrete(labels=c('feet first', 'hand first'), name = "Block order") +
+##     theme(plot.title = element_text(hjust = 0.5))
+## ggsave('rt_acc_x_order_MG1.jpeg', plot)
 
 ## effector:order interaction 
 predict <-  ggemmeans(l.rt, c('effector','effector_order'))
 plot <- plot(predict) + 
     labs(x = "Prime effector", 
-         y = "Centered Response Time (ms)", 
+         y = "Response Time (ms)", 
          title = "Prime effector x Block Order interaction on RT") +
     scale_x_continuous(breaks = c(1, 2), labels=c("feet", "hand")) +
     scale_colour_discrete(labels=c('feet first', 'hand first'),  name = "Block order") +
@@ -78,13 +76,14 @@ plot <- plot(predict) +
 ggsave('rt_effector_x_order_MG1.jpeg', plot)
 
 ## ** bayesian
-fit.rt <- brm(rt_gabor_centered*1000 ~  accuracy_gabor * congruency * effector * effector_order +
+fit.rt <- brm(rt_gabor*1000 ~  accuracy_gabor * congruency * effector * effector_order +
                      (1 + accuracy_gabor + congruency + effector + effector_order  ||subject_id) ,
+           family=exgaussian(link="identity"),
            data = data,
-           prior = c(set_prior("normal(0,1)", class = "b")),
+           ##prior = c(set_prior("normal(0,1)", class = "b")),
            cores = 4, chains = 4,
            control = list(adapt_delta = .95,  max_treedepth = 12),
-           iter = 4000,  warmup = 2000, seed = 123,
+           iter = 5000,  warmup = 3000, seed = 123,
            save_model = 'rt.stan',
            save_pars = save_pars(all = TRUE)
            )

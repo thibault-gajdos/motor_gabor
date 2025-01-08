@@ -25,9 +25,9 @@ contrasts(data$congruency) <-  contr.sum(2) ## incongruent: -1; congruent: 1
 
 ## ** frequentist
 
-l.rt <- lmer_alt(rt_gabor_centered*1000 ~  accuracy_gabor * congruency +
+l.rt <- lmer_alt(rt_gabor*1000 ~  accuracy_gabor * congruency +
                      (1 + accuracy_gabor + congruency ||subject_id),
-                   REML = TRUE,
+                   family=inverse.gaussian(link="identity"),
                    data = data)
 summary(l.rt)
 
@@ -36,12 +36,13 @@ tab_model(l.rt, file = "rt_MG3.html")
 
 ## plot interactions
 ## effects are averaged over the levels of factors
-
-## accuracy:order interaction 
+load('fit_rt_MG3.rdata')
+summary(l.rt)
+## accuracy:congruency
 predict <-  ggemmeans(l.rt, c('accuracy_gabor','congruency'))
 plot <- plot(predict) + 
   labs(x = "Accuracy", 
-       y = "Centered Response Time (ms)", 
+       y = "Response Time (ms)", 
        title = "Accuracy x Congruency interaction on RT") +
     scale_x_continuous(breaks = c(0, 1), labels=c("error", "correct")) +
     #scale_colour_discrete(labels=c('feet first', 'hand first'), name = "Block order") +
@@ -49,10 +50,10 @@ plot <- plot(predict) +
 ggsave('rt_acc_x_congruency_MG3.jpeg', plot)
 
 ## ** bayesian
-fit.rt <- brm(rt_gabor_centered*1000 ~  accuracy_gabor * congruency  +
+fit.rt <- brm(rt_gabor*1000 ~  accuracy_gabor * congruency  +
                      (1 + accuracy_gabor + congruency ||subject_id) ,
            data = data,
-           prior = c(set_prior("normal(0,1)", class = "b")),
+           family=exgaussian(link="identity"),
            cores = 4, chains = 4,
            control = list(adapt_delta = .95,  max_treedepth = 12),
            iter = 4000,  warmup = 2000, seed = 123,
