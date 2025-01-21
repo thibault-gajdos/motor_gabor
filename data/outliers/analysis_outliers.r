@@ -32,10 +32,11 @@ data2$rt_gabor_centered <- data2$rt_gabor - mean(data2$rt_gabor, na.rm = TRUE)
 
 ## * RT
 
-fit1.rt <- brm(rt_gabor_centered*1000 ~  accuracy_gabor * congruency * effector * effector_order +
+fit1.rt <- brm(rt_gabor*1000 ~  accuracy_gabor * congruency * effector * effector_order +
                      (1 + accuracy_gabor + congruency + effector + effector_order  ||subject_id) ,
            data = data1,
-           prior = c(set_prior("normal(0,1)", class = "b")),
+           family=exgaussian(link="identity"),
+           ##prior = c(set_prior("normal(0,1)", class = "b")),
            cores = 4, chains = 4,
            control = list(adapt_delta = .95,  max_treedepth = 12),
            iter = 4000,  warmup = 2000, seed = 123,
@@ -44,13 +45,13 @@ fit1.rt <- brm(rt_gabor_centered*1000 ~  accuracy_gabor * congruency * effector 
            )
 save(fit1.rt, file = 'rt_outliers_MG1.rdata')
 
-fit2.rt <- brm(rt_gabor_centered*1000 ~  accuracy_gabor * congruency * effector * effector_order +
+fit2.rt <- brm(rt_gabor*1000 ~  accuracy_gabor * congruency * effector * effector_order +
                      (1 + accuracy_gabor + congruency + effector + effector_order  ||subject_id) ,
            data = data2,
-           prior = c(set_prior("normal(0,1)", class = "b")),
+          family=exgaussian(link="identity"),
            cores = 4, chains = 4,
-           control = list(adapt_delta = .95,  max_treedepth = 12),
-           iter = 4000,  warmup = 2000, seed = 123,
+           control = list(adapt_delta = .9,  max_treedepth = 12),
+           iter = 4000,  warmup = 2000, seed = 1234,
            save_model = 'rt.stan',
            save_pars = save_pars(all = TRUE)
            )

@@ -31,6 +31,7 @@ parameters {
   vector[Kc] b;  // regression coefficients
   real Intercept;  // temporary intercept for centered predictors
   real<lower=0> sigma;  // dispersion parameter
+  real<lower=0> beta;  // scale parameter
   vector<lower=0>[M_1] sd_1;  // group-level standard deviations
   array[M_1] vector[N_1] z_1;  // standardized group-level effects
 }
@@ -46,10 +47,10 @@ transformed parameters {
   r_1_3 = (sd_1[3] * (z_1[3]));
   r_1_4 = (sd_1[4] * (z_1[4]));
   r_1_5 = (sd_1[5] * (z_1[5]));
-  lprior += normal_lpdf(b | 0,1);
-  lprior += student_t_lpdf(Intercept | 3, -38.9, 164.7);
+  lprior += student_t_lpdf(Intercept | 3, 672.5, 164.7);
   lprior += student_t_lpdf(sigma | 3, 0, 164.7)
     - 1 * student_t_lccdf(0 | 3, 0, 164.7);
+  lprior += gamma_lpdf(beta | 1, 0.1);
   lprior += student_t_lpdf(sd_1 | 3, 0, 164.7)
     - 5 * student_t_lccdf(0 | 3, 0, 164.7);
 }
@@ -58,12 +59,12 @@ model {
   if (!prior_only) {
     // initialize linear predictor term
     vector[N] mu = rep_vector(0.0, N);
-    mu += Intercept;
+    mu += Intercept + Xc * b;
     for (n in 1:N) {
       // add more terms to the linear predictor
       mu[n] += r_1_1[J_1[n]] * Z_1_1[n] + r_1_2[J_1[n]] * Z_1_2[n] + r_1_3[J_1[n]] * Z_1_3[n] + r_1_4[J_1[n]] * Z_1_4[n] + r_1_5[J_1[n]] * Z_1_5[n];
     }
-    target += normal_id_glm_lpdf(Y | Xc, mu, b, sigma);
+    target += exp_mod_normal_lpdf(Y | mu - beta, sigma, inv(beta));
   }
   // priors including constants
   target += lprior;
