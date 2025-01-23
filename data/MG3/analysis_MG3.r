@@ -49,6 +49,9 @@ plot <- plot(predict) +
     theme(plot.title = element_text(hjust = 0.5))
 ggsave('rt_acc_x_congruency_MG3.jpeg', plot)
 
+predict <- emmeans(l.rt, c('accuracy_gabor','congruency'))
+pairs(predict)
+
 ## ** bayesian
 fit.rt <- brm(rt_gabor*1000 ~  accuracy_gabor * congruency  +
                      (1 + accuracy_gabor + congruency ||subject_id) ,

@@ -305,7 +305,7 @@ load(paste(dir,'MG3/fit_rt_MG3.rdata',sep=''))
 rt3 <- l.rt
 tab_model(rt1,rt2,rt3, file = "rt.html")
 
-load(paste(dir,'MG1/fit_rt_bayes_MG1.rdata',sep=''))
+load(paste(dir,'MG1/rt_bayes_MG1.rdata',sep=''))
 rt_bayes1 <- fit.rt
 load(paste(dir,'MG2/rt_bayes_MG2.rdata',sep=''))
 rt_bayes2 <- fit.rt

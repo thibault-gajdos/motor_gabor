@@ -75,6 +75,10 @@ plot <- plot(predict) +
     theme(plot.title = element_text(hjust = 0.5))
 ggsave('rt_effector_x_order_MG1.jpeg', plot)
 
+## test interaction
+predict <-  emmeans(l.rt, c('effector','effector_order'))
+pairs(predict, by="effector_order")
+
 ## ** bayesian
 fit.rt <- brm(rt_gabor*1000 ~  accuracy_gabor * congruency * effector * effector_order +
                      (1 + accuracy_gabor + congruency + effector + effector_order  ||subject_id) ,
@@ -90,7 +94,6 @@ fit.rt <- brm(rt_gabor*1000 ~  accuracy_gabor * congruency * effector * effector
 
 save(fit.rt, file = 'rt_bayes_MG1.rdata')
 tab_model(fit.rt, file = "rt_bayes_MG1.html")
-
 
 ## RT evolution accross blocks
 d <- data %>%
