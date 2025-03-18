@@ -1,0 +1,67 @@
+
+\usepackage{booktabs}
+
+\begin{table}
+\begin{center}
+\begin{tabular}{l c c c}
+\toprule
+ & Model 1 & Model 2 & Model 3 \\
+\midrule
+accuracy\_gabor1                                          & $0.64^{***}$ & $0.35^{***}$  & $0.46^{***}$  \\
+                                                          & $(0.07)$     & $(0.04)$      & $(0.05)$      \\
+congruency1                                               & $-0.06^{**}$ & $-0.07^{*}$   & $-0.11^{***}$ \\
+                                                          & $(0.02)$     & $(0.03)$      & $(0.02)$      \\
+effector1                                                 & $0.01$       & $-0.02$       &               \\
+                                                          & $(0.04)$     & $(0.05)$      &               \\
+effector\_order1                                          & $-0.25^{*}$  & $-0.30$       &               \\
+                                                          & $(0.12)$     & $(0.17)$      &               \\
+rt\_gabor\_centered                                       & $-0.52$      & $-2.67^{***}$ & $-1.97^{***}$ \\
+                                                          & $(0.38)$     & $(0.29)$      & $(0.23)$      \\
+accuracy\_gabor1:congruency1                              & $0.04^{*}$   & $-0.00$       & $0.03$        \\
+                                                          & $(0.02)$     & $(0.02)$      & $(0.02)$      \\
+accuracy\_gabor1:effector1                                & $0.08^{***}$ & $0.01$        &               \\
+                                                          & $(0.02)$     & $(0.02)$      &               \\
+congruency1:effector1                                     & $-0.02$      & $-0.02$       &               \\
+                                                          & $(0.02)$     & $(0.02)$      &               \\
+accuracy\_gabor1:effector\_order1                         & $-0.06$      & $0.03$        &               \\
+                                                          & $(0.08)$     & $(0.04)$      &               \\
+congruency1:effector\_order1                              & $0.03$       & $0.04$        &               \\
+                                                          & $(0.02)$     & $(0.03)$      &               \\
+effector1:effector\_order1                                & $-0.12^{**}$ & $-0.08$       &               \\
+                                                          & $(0.04)$     & $(0.05)$      &               \\
+accuracy\_gabor1:congruency1:effector1                    & $0.02$       & $0.03$        &               \\
+                                                          & $(0.02)$     & $(0.02)$      &               \\
+accuracy\_gabor1:congruency1:effector\_order1             & $-0.00$      & $-0.05^{*}$   &               \\
+                                                          & $(0.02)$     & $(0.02)$      &               \\
+accuracy\_gabor1:effector1:effector\_order1               & $0.07^{***}$ & $-0.00$       &               \\
+                                                          & $(0.02)$     & $(0.02)$      &               \\
+congruency1:effector1:effector\_order1                    & $-0.00$      & $0.02$        &               \\
+                                                          & $(0.02)$     & $(0.02)$      &               \\
+accuracy\_gabor1:congruency1:effector1:effector\_order1   & $0.01$       & $-0.01$       &               \\
+                                                          & $(0.02)$     & $(0.02)$      &               \\
+1|2                                                       & $-0.42^{**}$ & $-0.84^{***}$ & $-0.16^{*}$   \\
+                                                          & $(0.14)$     & $(0.17)$      & $(0.08)$      \\
+2|3                                                       & $0.51^{***}$ & $0.21$        & $0.86^{***}$  \\
+                                                          & $(0.14)$     & $(0.17)$      & $(0.08)$      \\
+3|4                                                       & $1.50^{***}$ & $1.14^{***}$  & $1.80^{***}$  \\
+                                                          & $(0.14)$     & $(0.17)$      & $(0.08)$      \\
+\midrule
+Log Likelihood                                            & $-4837.95$   & $-4940.32$    & $-5175.62$    \\
+AIC                                                       & $9755.91$    & $9974.65$     & $10385.25$    \\
+BIC                                                       & $10009.85$   & $10276.11$    & $10494.51$    \\
+Num. obs.                                                 & $4224$       & $4510$        & $4570$        \\
+Groups (subject\_id)                                      & $16$         & $24$          & $24$          \\
+Variance: subject\_id: (Intercept)                        & $0.44$       & $0.35$        & $0.19$        \\
+Variance: subject\_id: accuracy\_gabor1                   & $0.32$       & $0.08$        & $0.20$        \\
+Variance: subject\_id: congruencyincongruent              & $0.01$       & $0.02$        & $0.01$        \\
+Variance: subject\_id: effectorsame                       & $0.07$       & $0.25$        & $$            \\
+Variance: subject\_id: effector\_ordersame1               & $0.54$       & $1.85$        & $$            \\
+Variance: subject\_id: rt\_gabor\_centered                & $1.94$       & $1.62$        & $0.94$        \\
+Variance: subject\_id: congruencyincongruent:effectorsame & $$           & $0.02$        & $$            \\
+\bottomrule
+\multicolumn{4}{l}{\scriptsize{$^{***}p<0.001$; $^{**}p<0.01$; $^{*}p<0.05$}}
+\end{tabular}
+\caption{Confidence }
+\label{tab:regression_results}
+\end{center}
+\end{table}
