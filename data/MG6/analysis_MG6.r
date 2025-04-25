@@ -110,7 +110,7 @@ ggsave(plot.rt, file = "rt_violin.jpeg")
 plot.dt <- ggplot(data, aes(x=size, y=OOZ_time)) + 
     geom_violin() +
     stat_summary(fun.data=mean_sdl, fun.args = list(mult = 1) , geom="pointrange", color="blue")
-ggsave(plot.rt, file = "dt_violin.jpeg")
+ggsave(plot.dt, file = "dt_violin.jpeg")
 
 
 ## ** fit RT

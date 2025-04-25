@@ -16,7 +16,6 @@ data <- data %>%
     mutate(accuracy2 = ifelse((accuracy_gabor == 1 &  meta_evaluation == "C") | (accuracy_gabor == 0 & meta_evaluation == "I"), 1, 0)) %>%
     mutate(accuracy2 = ifelse(view_again == 1, accuracy2, NA)) %>%
     mutate(meta_accuracy = ifelse((view_again == 0 & accuracy_gabor == 1)|(view_again == 1 & accuracy_gabor == 0), 1, 0))
-
     
  
 ## define variables and  contrasts
@@ -104,7 +103,7 @@ ggsave(plot.rt, file = "rt_violin.jpeg")
 plot.dt <- ggplot(data, aes(x=size, y=OOZ_time)) + 
     geom_violin() +
     stat_summary(fun.data=mean_sdl, fun.args = list(mult = 1) , geom="pointrange", color="blue")
-ggsave(plot.rt, file = "dt_violin.jpeg")
+ggsave(plot.dt, file = "dt_violin.jpeg")
 
 
 ## ** fit RT
